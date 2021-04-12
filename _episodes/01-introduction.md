@@ -11,5 +11,10 @@ keypoints:
 ---
 FIXME
 
+Testing mathjax:
+$$
+  \exp(i\pi) = -1
+$$
+
 {% include links.md %}
 
