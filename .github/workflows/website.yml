@@ -80,7 +80,6 @@ jobs:
           writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
         shell: Rscript {0}
 
-
       - name: Install system dependencies for R packages
         if: steps.check-rmd.outputs.count != 0
         run: |

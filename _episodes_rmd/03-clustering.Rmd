@@ -39,6 +39,7 @@ library("irlba")
 library("scater")
 library("scuttle")
 library("scran")
+library("Rtsne")
 
 zd <- ZeiselBrainData()
 zd <- computeSumFactors(zd, cluster=quickCluster(zd))

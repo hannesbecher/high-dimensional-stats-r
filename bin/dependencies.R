@@ -45,6 +45,11 @@ create_description <- function(required_pkgs) {
 
 install_dependencies <- function(required_pkgs, ...) {
 
+  missing_pkgs <- setdiff(
+    required_pkgs,
+    rownames(installed.packages(lib.loc = lib))
+  )
+
   BiocManager::install(required_pkgs)
   # create_description(required_pkgs)
   # on.exit(file.remove("DESCRIPTION"))
