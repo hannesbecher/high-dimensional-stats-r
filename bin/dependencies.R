@@ -47,7 +47,7 @@ install_dependencies <- function(required_pkgs, ...) {
 
   missing_pkgs <- setdiff(
     required_pkgs,
-    rownames(installed.packages(lib.loc = lib))
+    rownames(installed.packages())
   )
 
   BiocManager::install(required_pkgs)
