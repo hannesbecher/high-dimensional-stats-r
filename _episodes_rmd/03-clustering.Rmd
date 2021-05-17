@@ -15,8 +15,8 @@ math: yes
 
 ```{r, include=FALSE}
 source("../bin/chunk-options.R")
-knitr_fig_path("02-")
-``````
+knitr_fig_path("03-")
+```
 
 R code in RMarkdown (with output):
 
