@@ -5,14 +5,19 @@ on:
       - gh-pages
       - master
       - main
+
   pull_request: []
+
 jobs:
   build-website:
     if: ${{ !endsWith(github.repository, '/styles') }}
+
     runs-on: ubuntu-20.04
+
     env:
       RSPM: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
     defaults:
       run:
         shell: bash
@@ -33,6 +38,7 @@ jobs:
       - name: Install Python modules
         run: |
           python3 -m pip install --upgrade pip setuptools wheel pyyaml==5.3.1 requests
+
       - name: Checkout the lesson
         uses: actions/checkout@master
         with:
@@ -43,6 +49,7 @@ jobs:
         id: check-rmd
         run: |
           echo "::set-output name=count::$(shopt -s nullglob; files=($(find . -iname '*.Rmd')); echo ${#files[@]})"
+
       - name: Set up R
         if: steps.check-rmd.outputs.count != 0
         uses: r-lib/actions/setup-r@master
@@ -120,5 +127,6 @@ jobs:
           git push origin gh-pages
           # return
           cd ..
+
       - run: make lesson-check-all
         if: always()
