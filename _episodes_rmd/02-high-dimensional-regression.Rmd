@@ -23,9 +23,12 @@ math: yes
 
 
 ```{r, include=FALSE}
-source("../bin/chunk-options.R")
+library("here")
+source(here("bin/chunk-options.R"))
 knitr_fig_path("02-")
 ```
+
+
 
 R code in RMarkdown (with output):
 
@@ -39,6 +42,91 @@ $\LaTeX$ inline, and in blocks:
 $$
     \exp(i\pi) = -1
 $$
+
+
+```{r}
+## challenge 1:
+## Create a normally distributed predictor, x
+## then create a normally distributed outcome, y
+## that does not depend on x
+## then, create the same with dependence
+noise_sd <- 1
+nobs <- 100
+x <- rnorm(nobs, mean = 0, sd = 1)
+noise <- rnorm(nobs, mean = 0, sd = noise_sd)
+slope <- 1
+intercept <- 0
+y <- (slope * x) + (intercept) + noise
+plot(x, y)
+fit <- lm(y ~ x)
+abline(fit)
+```
+
+```{r}
+## challenge 2:
+## Create a set of normal predictors, X
+## then create a normally distributed outcome, y
+## that depends on a subset of X
+noise_sd <- 2
+npred <- 99
+frac <- 0.2
+X <- replicate(npred - 1, rnorm(nobs, mean = 0, sd = 1))
+colnames(X) <- paste0("predictor_", 1:(npred-1))
+noise <- rnorm(nobs, mean = 0, sd = noise_sd)
+X <- cbind(intercept = rep(1, nobs), X)
+beta <- rep(0, npred)
+names(beta) <- colnames(X)
+ind <- as.logical(rbinom(npred, 1, frac))
+beta[ind] <- rnorm(sum(ind)) + sample(c(-2, 2), sum(ind), replace=TRUE)
+y <- ((X %*% beta) + noise)[, 1]
+
+cc <- sapply(1:ncol(X), function(i) {
+    coef(lm(y ~ X[, i]))[[2]]
+})
+plot(cc, beta, pch = 19, cex = 0.5)
+abline(0, 1)
+abline(v = 0, lty="dashed", col = "firebrick")
+abline(h = 0, lty="dashed", col = "firebrick")
+```
+
+
+```{r}
+xy <- as.data.frame(cbind(X, y = y))
+int <- lm(y ~ 1, data=xy)
+all <- lm(y ~ . + 0, data=xy)
+forward <- step(
+    int,
+    scope = list(upper = formula(all), lower = formula(int)),
+    direction = "forward",
+    trace = 0
+)
+forward$anova
+plot(coef(forward), beta[names(coef(forward))])
+```
+
+```{r}
+all <- lm(y ~ . + 0, data=xy)
+backward <- step(
+    all,
+    scope = formula(all),
+    direction = "backward",
+    trace = 0
+)
+backward$anova
+plot(coef(backward), beta[names(coef(backward))])
+```
+
+```{r}
+library("glmnet")
+ridge <- cv.glmnet(X[, -1], y, alpha = 0)
+lasso <- cv.glmnet(X[, -1], y, alpha = 1)
+elastic <- cv.glmnet(X[, -1], y, alpha = 0.5, intercept = FALSE)
+coef(lasso, s = lasso$lambda.1se)[, 1]
+plot(coef(lasso, s = lasso$lambda.1se)[, 1, beta)
+plot(coef(lasso, s = lasso$lambda.1se)[, 1], beta)                                        
+```
+
+
 
 
 ```{r}
@@ -59,6 +147,7 @@ if (!file.exists(here("data/FlowSorted_Blood_EPIC.rds"))) {
     source(here("data/methylation.R"))
 }
 norm <- readRDS(here("data/FlowSorted_Blood_EPIC.rds"))
+
 
 
 
