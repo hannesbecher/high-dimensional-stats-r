@@ -91,8 +91,8 @@ jobs:
           sudo -s eval "$sysreqs"
           sudo apt-get update && sudo apt-get -y install libcurl4-openssl-dev libglpk-dev
 
-#      - name: change perms
-#        run: sudo chmod -R 775 /opt/R/4.0.5/lib/R/library
+     - name: change perms
+       run: sudo chmod -R 775 /opt/R/4.0.5/lib/R/library
 
       - name: Install R dependencies
         run: |
