@@ -63,15 +63,40 @@ $$
 ## that does not depend on x
 ## then, create the same with dependence
 set.seed(42)
-noise_sd <- 1
-nobs <- 100
+noise_sd <- 2
+nobs <- 15
 x <- rnorm(nobs, mean = 0, sd = 1)
 noise <- rnorm(nobs, mean = 0, sd = noise_sd)
-slope <- 1
-intercept <- 0
+slope <- 4
+intercept <- 2
 y <- (slope * x) + (intercept) + noise
-plot(x, y)
+
+lik <- function(slope, intercept) {
+    sum(dnorm(y, mean = (slope * x) + intercept, sd = noise_sd, log=TRUE))
+}
+n <- 1000
+s <- seq(-5, 5, length.out = n)
+ll <- matrix(ncol = n, nrow = n)
+for (i in seq_along(s)) {
+    for (j in seq_along(s)) {
+        ll[i, j] <- lik(s[i], s[j])
+    }
+}
+image(s, s, ll, xlab = "slope", ylab = "intercept")
+abline(v = 0, lty = "dashed")
+abline(h = 0, lty = "dashed")
+# points(slope, intercept, pch=19)
 fit <- lm(y ~ x)
+points(coef(fit)[[2]], coef(fit)[[1]], pch=19)
+l1 <- 1
+lines(c(0, l1), c(l1, 0))
+lines(c(0, -l1), c(-l1, 0))
+lines(c(-l1, 0), c(0, l1))
+lines(c(0, l1), c(-l1, 0))
+
+
+
+plot(x, y)
 abline(fit)
 ```
 
@@ -225,6 +250,29 @@ hist(q)
 
 
 
+
+
+```{r}
+x <- t(getM(norm))
+y <- as.numeric(factor(norm$smoker)) - 1
+
+fit <- cv.glmnet(x = x, y = y, family="binomial")
+
+c <- coef(fit, s = fit$lambda.1se)
+c[c[, 1] != 0, 1]
+
+
+y <- norm$Age
+fit <- cv.glmnet(x = x, y = y)
+
+c <- coef(fit, s = fit$lambda.1se)
+coef <- c[c[, 1] != 0, 1]
+
+plot(y, x[, names(which.max(coef[-1]))])
+```
+
+
+
 ```{r, eval=FALSE, echo=FALSE}
 design <- model.matrix(~0 + lim$bmi_clas)
 colnames(design) <- gsub("lim$bmi_clas", "", colnames(design), fixed=TRUE)
@@ -265,27 +313,6 @@ hist(q)
 plot(tt1$logFC, -log10(tt1$P.Value))
 ```
 
-
-
-
-```{r}
-x <- t(getM(norm))
-y <- as.numeric(factor(norm$smoker)) - 1
-
-fit <- cv.glmnet(x = x, y = y, family="binomial")
-
-c <- coef(fit, s = fit$lambda.1se)
-c[c[, 1] != 0, 1]
-
-
-y <- norm$Age
-fit <- cv.glmnet(x = x, y = y)
-
-c <- coef(fit, s = fit$lambda.1se)
-coef <- c[c[, 1] != 0, 1]
-
-plot(y, x[, names(which.max(coef[-1]))])
-```
 
 
 {% include links.md %}
