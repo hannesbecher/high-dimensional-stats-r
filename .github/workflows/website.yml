@@ -70,6 +70,12 @@ jobs:
       #     install.packages(setdiff(c('remotes', 'rprojroot', 'renv', 'desc', 'rmarkdown', 'knitr'), rownames(installed.packages())))
       #   shell: Rscript {0}
 
+      - name: Install needed packages
+        if: steps.check-rmd.outputs.count != 0
+        run: |
+          install.packages("glue")
+        shell: Rscript {0}
+
       # - name: Query dependencies
       #   if: steps.check-rmd.outputs.count != 0
       #   run: |
