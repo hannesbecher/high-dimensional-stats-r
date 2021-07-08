@@ -131,7 +131,7 @@ _episodes/%.md: _episodes_rmd/%.Rmd install-rmd-deps
 	@bin/knit_lessons.sh $< $@
 
 slides: lesson-md
-	Rscript -e "bin/slider.R"
+	Rscript "bin/slider.R"
 
 ## * lesson-check     : validate lesson Markdown
 lesson-check : lesson-fixme
