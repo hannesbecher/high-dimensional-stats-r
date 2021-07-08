@@ -45,65 +45,61 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      # - name: Look for R-markdown files
-      #   id: check-rmd
-      #   run: |
-      #     echo "::set-output name=count::$(shopt -s nullglob; files=($(find . -iname '*.Rmd')); echo ${#files[@]})"
+      - name: Look for R-markdown files
+        id: check-rmd
+        run: |
+          echo "::set-output name=count::$(shopt -s nullglob; files=($(find . -iname '*.Rmd')); echo ${#files[@]})"
 
       - name: Set up R
+        if: steps.check-rmd.outputs.count != 0
         uses: r-lib/actions/setup-r@master
         with:
           r-version: 'release'
 
-      # - name: Cache R packages
-      #   if: steps.check-rmd.outputs.count != 0
-      #   uses: actions/cache@v1
-      #   with:
-      #     path: ${{ env.R_LIBS_USER }}
-      #     key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-      #     restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+      - name: Cache R packages
+        if: steps.check-rmd.outputs.count != 0
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
-      # - name: Install needed packages
-      #   if: steps.check-rmd.outputs.count != 0
-      #   run: |
-      #     install.packages(setdiff(c('remotes', 'rprojroot', 'renv', 'desc', 'rmarkdown', 'knitr'), rownames(installed.packages())))
-      #   shell: Rscript {0}
+      - name: Install needed packages
+        if: steps.check-rmd.outputs.count != 0
+        run: |
+          install.packages(setdiff(c('remotes', 'rprojroot', 'renv', 'desc', 'rmarkdown', 'knitr'), rownames(installed.packages())))
+        shell: Rscript {0}
+
+      - name: Query dependencies
+        if: steps.check-rmd.outputs.count != 0
+        run: |
+          source('bin/dependencies.R')
+          deps <- identify_dependencies()
+          create_description(deps)
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
+        shell: Rscript {0}
+
+      - name: Install system dependencies for R packages
+        if: steps.check-rmd.outputs.count != 0
+        run: |
+          while read -r cmd
+          do
+            eval sudo $cmd
+          done < <(Rscript -e 'cat(remotes::system_requirements("ubuntu", "20.04"), sep = "\n")')
+          sysreqs=$(Rscript -e 'source("bin/dependencies.R"); deps <- remotes::dev_package_deps(dependencies = TRUE); cat(unlist(sapply(deps$package, function(x) remotes::system_requirements("ubuntu", "20.04", package=x))), sep = " && ")')
+          sudo -s eval "$sysreqs"
+          sudo apt-get update && sudo apt-get -y install libcurl4-openssl-dev libglpk-dev texlive-latex-base
 
       - name: change perms
         run: sudo chmod -R 775 /opt/R/4.1.0/lib/R/library
 
-      - name: Install needed packages
+      - name: Install R dependencies
         run: |
-          install.packages("glue")
+          source(file.path('bin', 'dependencies.R'))
+          install_required_packages()
+          install_dependencies(identify_dependencies())
         shell: Rscript {0}
-
-      # - name: Query dependencies
-      #   if: steps.check-rmd.outputs.count != 0
-      #   run: |
-      #     source('bin/dependencies.R')
-      #     deps <- identify_dependencies()
-      #     create_description(deps)
-      #     saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-      #     writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-      #   shell: Rscript {0}
-
-      # - name: Install system dependencies for R packages
-      #   if: steps.check-rmd.outputs.count != 0
-      #   run: |
-      #     while read -r cmd
-      #     do
-      #       eval sudo $cmd
-      #     done < <(Rscript -e 'cat(remotes::system_requirements("ubuntu", "20.04"), sep = "\n")')
-      #     sysreqs=$(Rscript -e 'source("bin/dependencies.R"); deps <- remotes::dev_package_deps(dependencies = TRUE); cat(unlist(sapply(deps$package, function(x) remotes::system_requirements("ubuntu", "20.04", package=x))), sep = " && ")')
-      #     sudo -s eval "$sysreqs"
-      #     sudo apt-get update && sudo apt-get -y install libcurl4-openssl-dev libglpk-dev texlive-latex-base
-
-      # - name: Install R dependencies
-      #   run: |
-      #     source(file.path('bin', 'dependencies.R'))
-      #     install_required_packages()
-      #     install_dependencies(identify_dependencies())
-      #   shell: Rscript {0}
 
       - name: Render the markdown and confirm that the site can be built
         run: make site
