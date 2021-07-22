@@ -164,6 +164,12 @@ plot(tt1$logFC, -log10(tt1$P.Value))
 ```
 
 
+Figure taken from [Hastie et al. (2020)](https://doi.org/10.1214/19-STS733).
+```{r}
+knitr::include_graphics(here("fig/bs_fs_lasso.png"))
+```
+
+
 > ## Selecting hyperparameters
 > 
 > There are various methods to select the "best"
@@ -174,7 +180,7 @@ plot(tt1$logFC, -log10(tt1$P.Value))
 > $K$ chunks produces more variability.
 > 
 > ```{r}
-> knitr::include_graphics(here("fig/cross_validaiton.svg"))
+> knitr::include_graphics(here("fig/cross_validation.svg"))
 > ```
 >
 > To be really rigorous, we could even repeat this *cross-validation*
