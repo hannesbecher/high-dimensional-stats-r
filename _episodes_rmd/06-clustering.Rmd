@@ -18,7 +18,7 @@ math: yes
 
 ```{r, include=FALSE}
 source("../bin/chunk-options.R")
-knitr_fig_path("04-")
+knitr_fig_path("06-")
 ```
 
 ```{r}
