@@ -29,7 +29,16 @@ colData(norm) <- colData(norm)[, cn]
 
 cc <- complete.cases(norm$Age)
 norm <- norm[, cc]
+
+
+features <- methylclock::coefHorvath$CpGmarker
+random_features <- sample(
+    setdiff(rownames(norm), features),
+    5000 - length(features)
+)
+
+selected <- c(features, random_features)
 set.seed(42)
-norm <- norm[sample(nrow(norm), 5000), ]
+norm <- norm[intersect(selected, rownames(norm)), ]
 
 saveRDS(norm, here("data/methylation.rds"))
