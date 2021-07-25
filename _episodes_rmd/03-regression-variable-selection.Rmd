@@ -25,21 +25,40 @@ math: yes
 ---
 
 
-```{r, include=FALSE}
+```{r settings, include=FALSE}
 library("here")
 source(here("bin/chunk-options.R"))
 knitr_fig_path("03-")
 ```
 
+# Intro
+
+First, let's read in the data.
+
+
+```{r loadmethy}
+library("here")
+library("minfi")
+if (!file.exists(here("data/methylation.rds"))) {
+    source(here("data/methylation.R"))
+}
+methylation <- readRDS(here("data/methylation.rds"))
+
+methyl_mat <- t(assay(methylation))
+age <- methylation$Age
+```
+
+## Why would we want to do feature selection?
 
 In the previous lesson we did a kind of feature selection by doing
 univariate analysis and thresholding by p-value/effect size.
 
 
-
-
 However we might think there's some combination of methylation features
-that combined explain age.
+that combined explain age. For example, if we want to be able to predict age 
+from methylation, that's a lot easier if we figure out what the contribution
+of each feature is conditional on all others, rather than independent of
+all others.
 
 $$
     y_j = \beta_0 + \beta_1 X_1 + \dots \beta_p X_p + \epsilon_j
@@ -48,42 +67,10 @@ $$
 However when the number of predictors is greater than the number of samples
 (basically always true in genetics) it isn't possible to include everything!
 
-
-```{r}
-suppressPackageStartupMessages({
-    library("glmnet")
-    library("limma")
-    library("minfi")
-    library("here")
-    library("broom")
-})
-
-if (!file.exists(here("data/synthetic.rds"))) {
-    source(here("data/synthetic.R"))
-}
-synthetic <- readRDS(here("data/synthetic.rds"))
-
-X <- as.matrix(t(assay(synthetic)))
-y <- synthetic$age
-beta <- rowData(synthetic)$true_beta
-names(beta) <- rownames(synthetic)
-
-# ## challenge 3: fit y on x univariate
-# ## compare with true betas
-cc <- sapply(seq_len(ncol(X)), function(i) {
-    coef(lm(y ~ X[, i]))[[2]]
-})
-plot(cc, beta, pch = 19, cex = 0.5)
-abline(0, 1)
-abline(v = 0, lty = "dashed", col = "firebrick")
-abline(h = 0, lty = "dashed", col = "firebrick")
-```
-
-
 What happens if we try to fit a model here?
 
-```{r}
-fit <- lm(y ~ X)
+```{r fitall}
+fit <- lm(age ~ methyl_mat)
 summary(fit)
 ```
 
@@ -97,14 +84,14 @@ reporting one set of p-values (ignoring all the non-significant ones).
 Secondly, we're likely to select a bunch of features that all have the same 
 information!
 
-```{r}
-ncol <- 1000
-nrow <- 100
-y <- rnorm(100)
-X_synth <- matrix(rnorm(nrow * ncol), nrow, ncol)
-cors <- apply(X_synth, 2, function(col) cor(col, y))
-X_pred <- X_synth[, abs(cors) > quantile(abs(cors), 0.99)]
-summary(lm(y ~ ., data = as.data.frame(X_pred)))
+```{r screening}
+nvar <- 1000
+nobs <- 100
+y_synth <- rnorm(nobs)
+synth_mat <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
+cors <- apply(synth_mat, 2, function(col) cor(col, y_synth))
+X_pred <- synth_mat[, abs(cors) > quantile(abs(cors), 0.99)]
+summary(lm(y_synth ~ ., data = as.data.frame(X_pred)))
 ```
 
 Amazing, the results are highly significant! However this isn't rigorous and
@@ -119,30 +106,31 @@ because blah blah number of permutations probably $p!$ but need to check.
 
 
 
-```{r}
+```{r bestsub}
 library("leaps")
-small_x <- X[, 1:10]
-fit_all <- regsubsets(x = small_x, y = y, really.big = TRUE)
-coef(fit_all, which.min(s$rss))
+small_methyl <- methyl_mat[, 1:10]
+fit_all <- regsubsets(x = small_methyl, y = age, really.big = TRUE)
+summ <- summary(fit_all)
+coef(fit_all, which.min(summ$rss))
 ```
 
+Let's try running BS on the full dataset.
 
-> ## Exercise
->
-> Try running BS on the full dataset.
->  
-> > ## Solution
-> > 
-> > It won't run because BS is BS.
-> {: .solution}
-{: .challenge}
-
-
-```{r}
-knitr::include_graphics(here("fig/bs_fs_lasso.png"))
+```{r bestsub_all, eval = FALSE}
+fit_all <- regsubsets(x = methyl_mat, y = age, really.big = TRUE)
+summ <- summary(fit_all)
+coef(fit_all, which.min(summ$rss))
 ```
 
-Figure taken from [Hastie et al. (2020)](https://doi.org/10.1214/19-STS733).
+This doesn't really work in a reasonable time because of the number of possible
+combinations!
+
+```{r bstab, echo = FALSE, out.width="500px"}
+knitr::include_graphics("../fig/bs_fs.png")
+```
+
+Figure taken from [Hastie et al. (2020)](https://www.stat.cmu.edu/~ryantibs/papers/bestsubset.pdf),
+published [here](https://doi.org/10.1214/19-STS733).
 
 
 ## Model metrics
@@ -153,25 +141,40 @@ problematic. We could, for example, keep adding features that marginally
 reduce the RSS (because adding a feature will never make it worse!) and
 under this framework we'll always select the biggest model.
 
+For example, if we have as many features as observations, the fit is always
+perfect.
+
+```{r perfectfit}
+nvar <- 100
+nobs <- 100
+y_synth <- rnorm(nobs)
+X_synth <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
+fit <- lm(y_synth ~ 0 + ., data = as.data.frame(X_synth))
+sum(residuals(fit)^2)
+```
+
 There are other ways to measure model performance while accounting for the
 complexity of the model. For example, adjusted $R^2$ is the normal
 R^2 measure that estimates the variation explained by the model while 
-accounting for the number of variables.
+accounting for the number of features.
 
-BIC and AIC also exist.
+BIC and AIC also exist. There's also an issue of how well these things
+will generalise beyond the present dataset.
 
 
 
 > ## Exercise
 >
-> Select the best model based on BIC.
+> Select the best model based on BIC. How does this differ to the best RSS 
+> model?
 >  
 > > ## Solution
 > > 
 > > 
-```{r}
-coef(fit_all, which.min(s$bic))
-```
+> > ```{r selbic}
+> > coef(fit_all, which.min(summ$bic))
+> > coef(fit_all, which.min(summ$rss))
+> > ```
 > {: .solution}
 {: .challenge}
 
@@ -180,7 +183,8 @@ coef(fit_all, which.min(s$bic))
 
 ## Forward stepwise selection
 
-Instead what we can do is forward stepwise selection.
+Since BS is computationally hard, we can instead do an approximation.
+One of these is forward stepwise selection.
 
 Basically:
 
@@ -191,12 +195,12 @@ Basically:
 4. otherwise stop
 
 
-```{r}
+```{r forwardsyn}
 ## challenge 4: forward selection
 ## compare with true betas
-xy <- as.data.frame(cbind(X, y = y))
-int <- lm(y ~ 1, data = xy)
-all <- lm(y ~ . + 0, data = xy)
+xy <- as.data.frame(cbind(methyl_mat, age = age))
+int <- lm(age ~ 1, data = xy)
+all <- lm(age ~ . + 0, data = xy)
 forward <- step(
     int,
     scope = list(upper = formula(all), lower = formula(int)),
@@ -212,15 +216,6 @@ abline(h = 0, lty = "dashed", col = "firebrick")
 
 
 
-```{r}
-if (!file.exists(here("data/methylation.rds"))) {
-    source(here("data/methylation.R"))
-}
-methylation <- readRDS(here("data/methylation.rds"))
-
-y <- methylation$Age
-X <- t(assay(methylation))
-```
 
 
 
@@ -228,24 +223,16 @@ X <- t(assay(methylation))
 > Perform forward subset selection on the methylation data.
 > 
 > Check the BICs.
+>
 > > ## Solution
 > > 
 > > As above.
 > {: .solution}
 {: .challenge}
 
-```{r}
+```{r forward, eval = FALSE}
 ## challenge 4: forward selection
-## compare with true betas
-xy <- as.data.frame(cbind(X, y = y))
-int <- lm(y ~ 1, data = xy)
-all <- lm(y ~ . + 0, data = xy)
-forward <- step(
-    int,
-    scope = list(upper = formula(all), lower = formula(int)),
-    direction = "forward",
-    trace = 0
-)
+fit_forward <- regsubsets(x = methyl_mat, y = age, method = "forward")
 ```
 
 ## Reverse stepwise
@@ -253,29 +240,39 @@ forward <- step(
 If we have a model that we think is real and we want to slim it down, we
 can do reverse subset selection.
 
-## Exercise
-
-Do reverse subset selection and compare with the full model somehow.
-```{r}
-features <- methylclock::coefHorvath$CpGmarker
-features <- intersect(features, colnames(X))
-x_horvath <- X[, features]
-
-## note about backward/both, not a challenge
-fit_back <- regsubsets(x = x_horvath, y = y, method = "backward")
-
-coef(fit_back, which.min(s$bic))
+`methylclock::coefHorvath` is the Horvath methylation age predictor
+[Horvath (2013)](https://pubmed.ncbi.nlm.nih.gov/24138928/).
 
 
+> > ## Exercise
+> > 
+> > Do reverse subset selection and compare with the full model somehow.
+> > 
+> > ```{r reverse}
+> > features <- methylclock::coefHorvath$CpGmarker
+> > features <- intersect(features, colnames(methyl_mat))
+> > methyl_horvath <- methyl_mat[, features[1:30]]
+> > 
+> > ## note about backward/both, not a challenge
+> > fit_back <- regsubsets(x = methyl_horvath, y = age, method = "backward")
+> > summ_back <- summary(fit_back)
+> > 
+> > summ_back$bic
+> > coef(fit_back, which.min(summ_back$bic))
+> > ```
+> {: .solution}
+{: .challenge}
 
-# all <- lm(y ~ . + 0, data = xy)
-# backward <- step(
-#     all,
-#     scope = formula(all),
-#     direction = "backward",
-#     trace = 0
-# )
-# backward$anova
+```{r, eval=FALSE, echo=FALSE}
+xy <- cbind(age = age, methyl_horvath)
+all <- lm(age ~ . + 0, data = as.data.frame(xy))
+backward <- step(
+    all,
+    scope = formula(all),
+    direction = "backward",
+    trace = 0
+)
+backward$anova
 # plot(coef(backward), beta[names(coef(backward))])
 # abline(0, 1)
 # abline(v = 0, lty = "dashed", col = "firebrick")
