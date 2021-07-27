@@ -33,7 +33,7 @@ knitr_fig_path("03-")
 
 # Intro
 
-First, let's read in the data.
+First, let's read in the data from the last lesson.
 
 
 ```{r loadmethy}
@@ -48,7 +48,7 @@ methyl_mat <- t(assay(methylation))
 age <- methylation$Age
 ```
 
-## Why would we want to do feature selection?
+# Why would we want to do feature selection?
 
 In the previous lesson we did a kind of feature selection by doing
 univariate analysis and thresholding by p-value/effect size.
@@ -74,6 +74,7 @@ fit <- lm(age ~ methyl_mat)
 summary(fit)
 ```
 
+# Screening
 
 What people sometimes do is to select variables based on correlation with
 the outcome, or using a univariate modelling approach like we used in the 
@@ -98,12 +99,11 @@ Amazing, the results are highly significant! However this isn't rigorous and
 can lead to problems so don't do it!
 
 
-## Best subset selection
+# Best subset selection
 
 However, we could imagine trying each combination of features to find which
 is the best combination. This works, but is really computationally demanding,
 because blah blah number of permutations probably $p!$ but need to check.
-
 
 
 ```{r bestsub}
@@ -133,7 +133,7 @@ Figure taken from [Hastie et al. (2020)](https://www.stat.cmu.edu/~ryantibs/pape
 published [here](https://doi.org/10.1214/19-STS733).
 
 
-## Model metrics
+# Model metrics
 
 In the example above we used RSS (residual sum of squares) to choose a model.
 However when comparing models with different numbers of features, this is
@@ -178,7 +178,7 @@ will generalise beyond the present dataset.
 {: .challenge}
 
 
-## Forward stepwise selection
+# Forward stepwise selection
 
 Since BS is computationally hard, we can instead do an approximation.
 One of these is forward stepwise selection.
@@ -243,7 +243,7 @@ abline(h = 0, lty = "dashed", col = "firebrick")
 {: .challenge}
 
 
-## Reverse stepwise
+# Reverse stepwise selection
 
 If we have a model that we think is real and we want to slim it down, we
 can do reverse subset selection.

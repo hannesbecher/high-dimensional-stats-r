@@ -19,8 +19,6 @@ math: yes
 ---
 
 
-
-
 ```{r, include=FALSE}
 library("here")
 source(here("bin/chunk-options.R"))
