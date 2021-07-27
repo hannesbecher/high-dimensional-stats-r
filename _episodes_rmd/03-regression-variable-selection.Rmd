@@ -18,9 +18,9 @@ keypoints:
   a better explanation than a single feature alone."
 - "Stepwise regression allows us to find a set of features that
   are associated with an outcome (eg, age)."
-- "Stepwise regression will tend to retain only one
-  feature out of many that are correlated."
 - "Stepwise regression is not very efficient."
+# - "Stepwise regression will tend to retain only one
+#   feature out of many that are correlated."
 math: yes
 ---
 
@@ -69,7 +69,7 @@ However when the number of predictors is greater than the number of samples
 
 What happens if we try to fit a model here?
 
-```{r fitall}
+```{r fitall, R.options=list(max.print=20)}
 fit <- lm(age ~ methyl_mat)
 summary(fit)
 ```
@@ -154,31 +154,28 @@ sum(residuals(fit)^2)
 ```
 
 There are other ways to measure model performance while accounting for the
-complexity of the model. For example, adjusted $R^2$ is the normal
-R^2 measure that estimates the variation explained by the model while 
-accounting for the number of features.
+complexity of the model. For example, adjusted $R^2$ is similar to the normal
+R^2 measure that estimates the variation explained by the model, while also
+accounting for the number of features. This is explained
+in more detail in [the multiple regression lesson](https://carpentries-incubator.github.io/multiple-linear-regression-public-health/)
 
 BIC and AIC also exist. There's also an issue of how well these things
 will generalise beyond the present dataset.
-
-
 
 > ## Exercise
 >
 > Select the best model based on BIC. How does this differ to the best RSS 
 > model?
->  
+> 
 > > ## Solution
 > > 
 > > 
 > > ```{r selbic}
-> > coef(fit_all, which.min(summ$bic))
-> > coef(fit_all, which.min(summ$rss))
+> > coef(fit_all, id = which.min(summ$bic))
+> > coef(fit_all, id = which.min(summ$rss))
 > > ```
 > {: .solution}
 {: .challenge}
-
-
 
 
 ## Forward stepwise selection
@@ -194,21 +191,29 @@ Basically:
    and return to 2.
 4. otherwise stop
 
+Here we apply it to a synthetic methylation dataset where we know the true
+predictors.
 
 ```{r forwardsyn}
 ## challenge 4: forward selection
 ## compare with true betas
-xy <- as.data.frame(cbind(methyl_mat, age = age))
-int <- lm(age ~ 1, data = xy)
-all <- lm(age ~ . + 0, data = xy)
-forward <- step(
-    int,
-    scope = list(upper = formula(all), lower = formula(int)),
-    direction = "forward",
-    trace = 0
-)
-forward$anova
-plot(coef(forward), beta[names(coef(forward))])
+if (!file.exists(here("data/synthetic.rds"))) {
+  source(here("data/synthetic.R"))
+}
+synthetic <- readRDS(here("data/synthetic.rds"))
+
+synth_mat <- t(assay(synthetic))
+synth_age <- synthetic$age
+
+fit_forward <- regsubsets(x = synth_mat, y = synth_age, method = "forward")
+summ_forward <- summary(fit_forward)
+est_coef_fwd <- coef(fit_forward, id = which.min(summ_forward$bic))
+true_coefs <- rowData(synthetic)[names(est_coef_fwd)[-1], "true_beta"]
+true_coefs
+est_coef_fwd
+
+all_coefs <- c(true_coefs, est_coef_fwd[-1])
+plot(true_coefs, est_coef_fwd[-1], xlim = range(all_coefs), ylim = range(all_coefs))
 abline(0, 1)
 abline(v = 0, lty = "dashed", col = "firebrick")
 abline(h = 0, lty = "dashed", col = "firebrick")
@@ -222,18 +227,21 @@ abline(h = 0, lty = "dashed", col = "firebrick")
 > ## Exercise
 > Perform forward subset selection on the methylation data.
 > 
-> Check the BICs.
+> Check the BICs. Select the best model based on BIC.
 >
 > > ## Solution
 > > 
-> > As above.
+> > ```{r forward}
+> > ## challenge 4: forward selection
+> > fit_forward <- regsubsets(x = methyl_mat, y = age, method = "forward")
+> > summ_forward <- summary(fit_forward)
+> > est_coef_fwd <- coef(fit_forward, id = which.min(summ_forward$bic))
+> > est_coef_fwd
+> > ```
+> > 
 > {: .solution}
 {: .challenge}
 
-```{r forward, eval = FALSE}
-## challenge 4: forward selection
-fit_forward <- regsubsets(x = methyl_mat, y = age, method = "forward")
-```
 
 ## Reverse stepwise
 
@@ -244,10 +252,12 @@ can do reverse subset selection.
 [Horvath (2013)](https://pubmed.ncbi.nlm.nih.gov/24138928/).
 
 
-> > ## Exercise
-> > 
-> > Do reverse subset selection and compare with the full model somehow.
-> > 
+> ## Exercise
+> 
+> Do reverse subset selection and compare with the forward and reverse model.
+> 
+> > ## Solution
+> >
 > > ```{r reverse}
 > > features <- methylclock::coefHorvath$CpGmarker
 > > features <- intersect(features, colnames(methyl_mat))
@@ -258,7 +268,19 @@ can do reverse subset selection.
 > > summ_back <- summary(fit_back)
 > > 
 > > summ_back$bic
-> > coef(fit_back, which.min(summ_back$bic))
+> > est_coef_back <- coef(fit_back, id = which.min(summ_back$bic))
+> > true_coef <- setNames(
+> >   methylclock::coefHorvath$CoefficientTraining,
+> >   methylclock::coefHorvath$CpGmarker
+> > )
+> > plot(est_coef_back[-1], true_coef[names(est_coef_back)[-1]])
+> > abline(0, 1)
+> > abline(v = 0, lty = "dashed", col = "firebrick")
+> > abline(h = 0, lty = "dashed", col = "firebrick")
+> > 
+> > names(est_coef_back[-1])
+> > names(est_coef_fwd[-1])
+> > intersect(names(est_coef_back[-1]), names(est_coef_fwd[-1]))
 > > ```
 > {: .solution}
 {: .challenge}

@@ -12,12 +12,14 @@ objectives:
 - "Understand methods for shrinkage of noise parameters in
   high-dimensional regression."
 keypoints:
-- "Running many tests with high-dimensional data requires us to pay attention to 
-   ..."
+- "When running a lot of tests for high-dimensional data, it's important to
+  correct for the number of tests performed."
 - "Multiple testing correction can enable us to account for many null hypothesis
-    significance tests while retaining power."
+  significance tests while retaining power."
+- "Multiple testing methods can be more conservative or more liberal, depending
+  on our goals."
 - "Sharing information between features can increase power and reduce false 
-    positives."
+  positives."
 math: yes
 ---
 
@@ -839,7 +841,6 @@ Shrinkage methods can be complex to implement and understand,
 but it's good to understand why these approaches may be more precise 
 and sensitive than the naive approach of fitting a model to each feature
 separately.
-
 
 > ## Exercise
 > 
