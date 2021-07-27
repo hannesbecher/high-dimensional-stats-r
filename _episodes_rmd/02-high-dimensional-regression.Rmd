@@ -597,7 +597,7 @@ abline(h = -log10(0.05), lty = "dashed")
 >    ensure "significant" changes are truly different? 
 > 
 > > ## Solution
-> > 1. By default we expect $`r nrow(xmat)` \times 0.05 = `r nrow(xmat)*0.05`$
+> > 1. By default we expect $10,000 \times 0.05 = 250$
 > >    features to be statistically significant under the null hypothesis,
 > >    because p-values should always be uniformly distributed under
 > >    the null hypothesis.

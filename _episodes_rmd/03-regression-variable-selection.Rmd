@@ -1,7 +1,7 @@
 ---
 title: "Feature selection for regression"
-teaching: 0
-exercises: 0
+teaching: 45
+exercises: 15
 questions:
 - "Why would we want to find a subset of features
   that are associated with an outcome?"
@@ -73,6 +73,8 @@ What happens if we try to fit a model here?
 fit <- lm(age ~ methyl_mat)
 summary(fit)
 ```
+
+So we can't do that mathematically, we have to find another way.
 
 # Screening
 

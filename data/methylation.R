@@ -32,13 +32,15 @@ norm <- norm[, cc]
 
 
 features <- methylclock::coefHorvath$CpGmarker
+features <- intersect(features, rownames(norm))
+other_features <- setdiff(rownames(norm), features)
 random_features <- sample(
-    setdiff(rownames(norm), features),
+    other_features,
     5000 - length(features)
 )
 
 selected <- c(features, random_features)
 set.seed(42)
-norm <- norm[intersect(selected, rownames(norm)), ]
+norm <- norm[selected, ]
 
 saveRDS(norm, here("data/methylation.rds"))
