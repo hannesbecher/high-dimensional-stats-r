@@ -1,0 +1,49 @@
+Package: foo
+Title: {{ Title }}
+Version: 1.0.0
+Authors@R: 
+    c(person(given = "Jo", family = "Doe", email = "jodoe@dom.ain",
+      role = c("aut", "cre")))
+Maintainer: {{ Maintainer }}
+Description: {{ Description }}
+License: {{ License }}
+LazyData: true
+URL: {{ URL }}
+BugReports: {{ BugReports }}
+Encoding: UTF-8
+Imports: 
+    BiocManager,
+    bluster,
+    broom,
+    ComplexHeatmap,
+    desc,
+    ExperimentHub,
+    FlowSorted.Blood.EPIC,
+    ggplot2,
+    glmnet,
+    glue,
+    here,
+    igraph,
+    IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
+    IlluminaHumanMethylationEPICmanifest,
+    irlba,
+    knitr,
+    leaps,
+    limma,
+    mclust,
+    minfi,
+    mixtools,
+    PCAtools,
+    qvalue,
+    RColorBrewer,
+    renv,
+    rmarkdown,
+    rprojroot,
+    Rtsne,
+    scater,
+    scran,
+    scRNAseq,
+    scuttle,
+    stats,
+    stringr,
+    viridis

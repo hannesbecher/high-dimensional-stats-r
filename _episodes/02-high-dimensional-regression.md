@@ -450,7 +450,7 @@ tidy(fit)
 
 
 ~~~
-# A tibble: 2 x 5
+# A tibble: 2 × 5
   term        estimate std.error statistic p.value
   <chr>          <dbl>     <dbl>     <dbl>   <dbl>
 1 (Intercept)  0.902      0.344      2.62   0.0129

@@ -135,27 +135,27 @@ lm(formula = y_synth ~ ., data = as.data.frame(X_pred))
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--1.71211 -0.34571 -0.02708  0.41282  1.81269 
+-1.99577 -0.40807 -0.01991  0.34199  1.94982 
 
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  0.01075    0.06595   0.163 0.870905    
-V1          -0.06962    0.07014  -0.993 0.323544    
-V2           0.10934    0.07021   1.557 0.122941    
-V3           0.14148    0.06441   2.197 0.030649 *  
-V4          -0.17722    0.06905  -2.567 0.011937 *  
-V5           0.22423    0.06434   3.485 0.000765 ***
-V6           0.14239    0.07701   1.849 0.067762 .  
-V7          -0.18310    0.06849  -2.674 0.008928 ** 
-V8           0.24941    0.07507   3.322 0.001297 ** 
-V9           0.24049    0.06871   3.500 0.000730 ***
-V10          0.16502    0.06174   2.673 0.008951 ** 
+(Intercept) -0.06678    0.07380  -0.905 0.367989    
+V1          -0.11264    0.07249  -1.554 0.123776    
+V2          -0.10020    0.07025  -1.426 0.157249    
+V3          -0.31587    0.07164  -4.409 2.89e-05 ***
+V4           0.12570    0.07348   1.711 0.090612 .  
+V5           0.13125    0.06956   1.887 0.062427 .  
+V6          -0.18857    0.06641  -2.839 0.005598 ** 
+V7           0.29590    0.07701   3.842 0.000228 ***
+V8           0.20916    0.06961   3.005 0.003451 ** 
+V9           0.25761    0.08034   3.206 0.001868 ** 
+V10          0.11054    0.08529   1.296 0.198302    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.6482 on 89 degrees of freedom
-Multiple R-squared:  0.5615,	Adjusted R-squared:  0.5122 
-F-statistic: 11.39 on 10 and 89 DF,  p-value: 2.538e-12
+Residual standard error: 0.7003 on 89 degrees of freedom
+Multiple R-squared:  0.552,	Adjusted R-squared:  0.5017 
+F-statistic: 10.97 on 10 and 89 DF,  p-value: 6.127e-12
 ~~~
 {: .output}
 
@@ -174,7 +174,12 @@ because blah blah number of permutations probably $p!$ but need to check.
 ~~~
 library("leaps")
 small_methyl <- methyl_mat[, 1:10]
-fit_all <- regsubsets(x = small_methyl, y = age, really.big = TRUE)
+fit_all <- regsubsets(
+  x = small_methyl,
+  y = age,
+  method = "exhaustive",
+  really.big = TRUE
+)
 summ <- summary(fit_all)
 coef(fit_all, which.min(summ$rss))
 ~~~
@@ -194,7 +199,12 @@ Let's try running BS on the full dataset.
 
 
 ~~~
-fit_all <- regsubsets(x = methyl_mat, y = age, really.big = TRUE)
+fit_all <- regsubsets(
+  x = methyl_mat,
+  y = age,
+  method = "exhaustive",
+  really.big = TRUE
+)
 summ <- summary(fit_all)
 coef(fit_all, which.min(summ$rss))
 ~~~
@@ -225,8 +235,8 @@ perfect.
 nvar <- 100
 nobs <- 100
 y_synth <- rnorm(nobs)
-X_synth <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
-fit <- lm(y_synth ~ 0 + ., data = as.data.frame(X_synth))
+x_synth <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
+fit <- lm(y_synth ~ 0 + ., data = as.data.frame(x_synth))
 sum(residuals(fit)^2)
 ~~~
 {: .language-r}
