@@ -58,6 +58,7 @@ working with require some special considerations.
 
 Ideally, we want to identify cases like this, where there is a
 clear difference, and we probably "don't need" statistics:
+
 ```{r example1, echo=FALSE, fig.cap="A scatter plot of age and a feature of interest.", fig.alt="An example of a strong linear association between a continuous phenotype (age) on the x-axis and a feature of interest (gene expression for a given gene) on the y-axis. A strong linear relationship with a positive slope exists between the two.", fig.width=6, fig.height=6}
 library("ggplot2")
 theme_set(theme_bw())
@@ -154,7 +155,10 @@ for (i in seq_along(sx)) {
         dens[i, j] <- dnorm(sy[[j]], mean = fx[[i]])
     }
 }
-image(sx, sy, dens, col = viridis::viridis(100, option = "magma"), xlab="x", ylab="y")
+image(sx, sy, dens,
+    col = viridis::viridis(100, option = "magma"),
+    xlab = "x", ylab = "y"
+)
 ```
 
 In order to decide whether a result would be unlikely
@@ -198,7 +202,7 @@ and look at the upper rather than lower tail. Because in a 2-tail test we're
 looking at "half" of the t-distribution, we also multiply the p-value by 2.
 
 ```{r simpval}
-pvals <- 2 * pt(abs(tvals), df = fit$df, lower.tail=FALSE)
+pvals <- 2 * pt(abs(tvals), df = fit$df, lower.tail = FALSE)
 all.equal(tab$Pr, pvals)
 ```
 
@@ -206,20 +210,20 @@ This is much more easy to observe visually, by plotting the distribution:
 
 ```{r tdist, echo = FALSE, fig.cap="The p-value for a regression coefficient represents how often it'd be observed under the null.", fig.alt="Density plot of a t-distribution showing the observed test statistics (here, t-statistics). The p-values, visualised here with shaded regions, represent the portion of the null distribution that is as extreme or more extreme as the observed test statistics, which are shown as dashed lines."}
 ggplot() +
-    geom_function(fun = function(x) dt(x, df=fit$df)) +
+    geom_function(fun = function(x) dt(x, df = fit$df)) +
     xlim(0, 4) +
     geom_vline(
         aes(xintercept = abs(tvals), color = rownames(tab)),
         lty = "dashed"
     ) +
-    stat_function(fun = function(x) dt(x, df=fit$df), 
+    stat_function(fun = function(x) dt(x, df = fit$df),
         aes(fill = rownames(tab)[[1]]),
         xlim = c(abs(tvals)[[1]], 4),
         alpha = 0.25,
         geom = "area"
     ) +
-    stat_function(fun = function(x) dt(x, df=fit$df), 
-        aes(fill=rownames(tab)[[2]]),
+    stat_function(fun = function(x) dt(x, df = fit$df),
+        aes(fill = rownames(tab)[[2]]),
         xlim = c(abs(tvals)[[2]], 4),
         alpha = 0.25,
         geom = "area"
@@ -346,9 +350,6 @@ The following code will read in the data for this episode.
 ```{r loadmethy}
 library("here")
 library("minfi")
-if (!file.exists(here("data/methylation.rds"))) {
-    source(here("data/methylation.R"))
-}
 methylation <- readRDS(here("data/methylation.rds"))
 ```
 
@@ -359,11 +360,19 @@ levels, and optional sample-level `colData` and feature-level `metadata`.
 These objects are very convenient to contain all of the information about 
 a dataset in a high-throughput context and may be covered in more
 detail in other Carpentries lessons.
+
 ```{r showmethy}
 methylation
 ```
 
 To extract the matrix of methylation values, we use the `assay` function.
+One thing to bear in mind with these objects (and data 
+structures for computational biology in R generally) is that
+in the matrix of methylation data, samples or observations
+are stored as columns, while features (in this case, CpG sites)
+are stored as rows. This is in contrast to usual tabular data,
+where features or variables are stored as columns and 
+observations are stored as rows.
 
 ```{r grabx}
 xmat <- assay(methylation)

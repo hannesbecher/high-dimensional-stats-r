@@ -56,6 +56,7 @@ working with require some special considerations.
 
 Ideally, we want to identify cases like this, where there is a
 clear difference, and we probably "don't need" statistics:
+
 <img src="../fig/rmd-02-example1-1.png" title="A scatter plot of age and a feature of interest." alt="An example of a strong linear association between a continuous phenotype (age) on the x-axis and a feature of interest (gene expression for a given gene) on the y-axis. A strong linear relationship with a positive slope exists between the two." width="432" style="display: block; margin: auto;" />
 
 or equivalently for a discrete covariate:
@@ -167,7 +168,7 @@ looking at "half" of the t-distribution, we also multiply the p-value by 2.
 
 
 ~~~
-pvals <- 2 * pt(abs(tvals), df = fit$df, lower.tail=FALSE)
+pvals <- 2 * pt(abs(tvals), df = fit$df, lower.tail = FALSE)
 all.equal(tab$Pr, pvals)
 ~~~
 {: .language-r}
@@ -264,9 +265,6 @@ The following code will read in the data for this episode.
 ~~~
 library("here")
 library("minfi")
-if (!file.exists(here("data/methylation.rds"))) {
-    source(here("data/methylation.R"))
-}
 methylation <- readRDS(here("data/methylation.rds"))
 ~~~
 {: .language-r}
@@ -278,6 +276,7 @@ levels, and optional sample-level `colData` and feature-level `metadata`.
 These objects are very convenient to contain all of the information about 
 a dataset in a high-throughput context and may be covered in more
 detail in other Carpentries lessons.
+
 
 ~~~
 methylation
@@ -307,6 +306,13 @@ Preprocessing
 {: .output}
 
 To extract the matrix of methylation values, we use the `assay` function.
+One thing to bear in mind with these objects (and data 
+structures for computational biology in R generally) is that
+in the matrix of methylation data, samples or observations
+are stored as columns, while features (in this case, CpG sites)
+are stored as rows. This is in contrast to usual tabular data,
+where features or variables are stored as columns and 
+observations are stored as rows.
 
 
 ~~~

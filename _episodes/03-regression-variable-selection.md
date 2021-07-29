@@ -38,9 +38,6 @@ First, let's read in the data from the last lesson.
 ~~~
 library("here")
 library("minfi")
-if (!file.exists(here("data/methylation.rds"))) {
-    source(here("data/methylation.R"))
-}
 methylation <- readRDS(here("data/methylation.rds"))
 
 methyl_mat <- t(assay(methylation))
@@ -121,8 +118,8 @@ nobs <- 100
 y_synth <- rnorm(nobs)
 synth_mat <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
 cors <- apply(synth_mat, 2, function(col) cor(col, y_synth))
-X_pred <- synth_mat[, abs(cors) > quantile(abs(cors), 0.99)]
-summary(lm(y_synth ~ ., data = as.data.frame(X_pred)))
+x_pred <- synth_mat[, abs(cors) > quantile(abs(cors), 0.99)]
+summary(lm(y_synth ~ ., data = as.data.frame(x_pred)))
 ~~~
 {: .language-r}
 
@@ -131,31 +128,31 @@ summary(lm(y_synth ~ ., data = as.data.frame(X_pred)))
 ~~~
 
 Call:
-lm(formula = y_synth ~ ., data = as.data.frame(X_pred))
+lm(formula = y_synth ~ ., data = as.data.frame(x_pred))
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--1.99577 -0.40807 -0.01991  0.34199  1.94982 
+-1.94595 -0.60144  0.06843  0.43005  2.15565 
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept) -0.06678    0.07380  -0.905 0.367989    
-V1          -0.11264    0.07249  -1.554 0.123776    
-V2          -0.10020    0.07025  -1.426 0.157249    
-V3          -0.31587    0.07164  -4.409 2.89e-05 ***
-V4           0.12570    0.07348   1.711 0.090612 .  
-V5           0.13125    0.06956   1.887 0.062427 .  
-V6          -0.18857    0.06641  -2.839 0.005598 ** 
-V7           0.29590    0.07701   3.842 0.000228 ***
-V8           0.20916    0.06961   3.005 0.003451 ** 
-V9           0.25761    0.08034   3.206 0.001868 ** 
-V10          0.11054    0.08529   1.296 0.198302    
+            Estimate Std. Error t value Pr(>|t|)   
+(Intercept)  0.14676    0.08085   1.815  0.07287 . 
+V1          -0.21663    0.07385  -2.933  0.00426 **
+V2          -0.16511    0.08589  -1.922  0.05775 . 
+V3          -0.21486    0.09772  -2.199  0.03050 * 
+V4           0.13703    0.10345   1.325  0.18869   
+V5           0.15014    0.08376   1.792  0.07647 . 
+V6           0.20389    0.08518   2.394  0.01878 * 
+V7          -0.13714    0.07851  -1.747  0.08411 . 
+V8           0.14005    0.09145   1.531  0.12920   
+V9          -0.10302    0.07373  -1.397  0.16581   
+V10          0.16998    0.07618   2.231  0.02819 * 
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 0.7003 on 89 degrees of freedom
-Multiple R-squared:  0.552,	Adjusted R-squared:  0.5017 
-F-statistic: 10.97 on 10 and 89 DF,  p-value: 6.127e-12
+Residual standard error: 0.7725 on 89 degrees of freedom
+Multiple R-squared:  0.4533,	Adjusted R-squared:  0.3918 
+F-statistic: 7.379 on 10 and 89 DF,  p-value: 2.046e-08
 ~~~
 {: .output}
 
@@ -177,8 +174,7 @@ small_methyl <- methyl_mat[, 1:10]
 fit_all <- regsubsets(
   x = small_methyl,
   y = age,
-  method = "exhaustive",
-  really.big = TRUE
+  method = "exhaustive"
 )
 summ <- summary(fit_all)
 coef(fit_all, which.min(summ$rss))
@@ -202,8 +198,7 @@ Let's try running BS on the full dataset.
 fit_all <- regsubsets(
   x = methyl_mat,
   y = age,
-  method = "exhaustive",
-  really.big = TRUE
+  method = "exhaustive"
 )
 summ <- summary(fit_all)
 coef(fit_all, which.min(summ$rss))
@@ -232,12 +227,9 @@ perfect.
 
 
 ~~~
-nvar <- 100
-nobs <- 100
-y_synth <- rnorm(nobs)
-x_synth <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
-fit <- lm(y_synth ~ 0 + ., data = as.data.frame(x_synth))
-sum(residuals(fit)^2)
+square_mat <- methyl_mat[1:37, ]
+fit_square <- lm(age ~ 0 + ., data = as.data.frame(square_mat))
+sum(residuals(fit_square)^2)
 ~~~
 {: .language-r}
 
@@ -298,7 +290,9 @@ will generalise beyond the present dataset.
 > {: .solution}
 {: .challenge}
 
-> # Selecting a model
+
+> ## Selecting a model
+> 
 > Yes, selecting a model with BIC on the training set is not ideal, we talk
 > about cross-validation later.
 {: .callout}
@@ -321,11 +315,6 @@ predictors.
 
 
 ~~~
-## challenge 4: forward selection
-## compare with true betas
-if (!file.exists(here("data/synthetic.rds"))) {
-  source(here("data/synthetic.R"))
-}
 synthetic <- readRDS(here("data/synthetic.rds"))
 
 synth_mat <- t(assay(synthetic))

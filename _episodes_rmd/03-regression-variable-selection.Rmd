@@ -39,9 +39,6 @@ First, let's read in the data from the last lesson.
 ```{r loadmethy}
 library("here")
 library("minfi")
-if (!file.exists(here("data/methylation.rds"))) {
-    source(here("data/methylation.R"))
-}
 methylation <- readRDS(here("data/methylation.rds"))
 
 methyl_mat <- t(assay(methylation))
@@ -93,8 +90,8 @@ nobs <- 100
 y_synth <- rnorm(nobs)
 synth_mat <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
 cors <- apply(synth_mat, 2, function(col) cor(col, y_synth))
-X_pred <- synth_mat[, abs(cors) > quantile(abs(cors), 0.99)]
-summary(lm(y_synth ~ ., data = as.data.frame(X_pred)))
+x_pred <- synth_mat[, abs(cors) > quantile(abs(cors), 0.99)]
+summary(lm(y_synth ~ ., data = as.data.frame(x_pred)))
 ```
 
 Amazing, the results are highly significant! However this isn't rigorous and
@@ -114,8 +111,7 @@ small_methyl <- methyl_mat[, 1:10]
 fit_all <- regsubsets(
   x = small_methyl,
   y = age,
-  method = "exhaustive",
-  really.big = TRUE
+  method = "exhaustive"
 )
 summ <- summary(fit_all)
 coef(fit_all, which.min(summ$rss))
@@ -127,8 +123,7 @@ Let's try running BS on the full dataset.
 fit_all <- regsubsets(
   x = methyl_mat,
   y = age,
-  method = "exhaustive",
-  really.big = TRUE
+  method = "exhaustive"
 )
 summ <- summary(fit_all)
 coef(fit_all, which.min(summ$rss))
@@ -157,12 +152,9 @@ For example, if we have as many features as observations, the fit is always
 perfect.
 
 ```{r perfectfit}
-nvar <- 100
-nobs <- 100
-y_synth <- rnorm(nobs)
-x_synth <- matrix(rnorm(nobs * nvar), nrow = nobs, ncol = nvar)
-fit <- lm(y_synth ~ 0 + ., data = as.data.frame(x_synth))
-sum(residuals(fit)^2)
+square_mat <- methyl_mat[1:37, ]
+fit_square <- lm(age ~ 0 + ., data = as.data.frame(square_mat))
+sum(residuals(fit_square)^2)
 ```
 
 There are other ways to measure model performance while accounting for the
@@ -189,7 +181,9 @@ will generalise beyond the present dataset.
 > {: .solution}
 {: .challenge}
 
-> # Selecting a model
+
+> ## Selecting a model
+> 
 > Yes, selecting a model with BIC on the training set is not ideal, we talk
 > about cross-validation later.
 {: .callout}
@@ -211,11 +205,6 @@ Here we apply it to a synthetic methylation dataset where we know the true
 predictors.
 
 ```{r forwardsyn}
-## challenge 4: forward selection
-## compare with true betas
-if (!file.exists(here("data/synthetic.rds"))) {
-  source(here("data/synthetic.R"))
-}
 synthetic <- readRDS(here("data/synthetic.rds"))
 
 synth_mat <- t(assay(synthetic))
@@ -311,10 +300,10 @@ backward <- step(
     trace = 0
 )
 backward$anova
-# plot(coef(backward), beta[names(coef(backward))])
-# abline(0, 1)
-# abline(v = 0, lty = "dashed", col = "firebrick")
-# abline(h = 0, lty = "dashed", col = "firebrick")
+plot(coef(backward), beta[names(coef(backward))])
+abline(0, 1)
+abline(v = 0, lty = "dashed", col = "firebrick")
+abline(h = 0, lty = "dashed", col = "firebrick")
 ```
 
 
