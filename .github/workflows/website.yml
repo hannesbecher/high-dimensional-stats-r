@@ -2,9 +2,8 @@ name: Website
 on:
   push:
     branches:
-      - main
+      - master
       # - gh-pages
-
   pull_request: []
 
 jobs:
@@ -53,7 +52,7 @@ jobs:
         if: steps.check-rmd.outputs.count != 0
         uses: r-lib/actions/setup-r@master
         with:
-          r-version: 'release'
+          r-version: '4.1.0'
 
       - name: Cache R packages
         if: steps.check-rmd.outputs.count != 0
