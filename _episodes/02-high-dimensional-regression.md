@@ -316,7 +316,7 @@ observations are stored as rows.
 
 
 ~~~
-xmat <- assay(methylation)
+methyl_mat <- assay(methylation)
 ~~~
 {: .language-r}
 
@@ -324,7 +324,7 @@ The distribution of these M-values looks like this:
 
 
 ~~~
-hist(xmat, breaks = "FD", xlab = "M-value")
+hist(methyl_mat, breaks = "FD", xlab = "M-value")
 ~~~
 {: .language-r}
 
@@ -414,7 +414,7 @@ get more information from the model object:
 
 
 ~~~
-fit <- lm(xmat[1, ] ~ age)
+fit <- lm(methyl_mat[1, ] ~ age)
 summary(fit)
 ~~~
 {: .language-r}
@@ -424,7 +424,7 @@ summary(fit)
 ~~~
 
 Call:
-lm(formula = xmat[1, ] ~ age)
+lm(formula = methyl_mat[1, ] ~ age)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
@@ -491,7 +491,7 @@ matrix, and then use it to fit a model to any feature we like:
 
 ~~~
 lm_feature <- function(i) {
-    as.data.frame(tidy(lm(xmat[i, ] ~ age))[2, ])
+    as.data.frame(tidy(lm(methyl_mat[i, ] ~ age))[2, ])
 }
 coef2 <- lm_feature(2)
 coef3 <- lm_feature(3)
@@ -505,7 +505,7 @@ feature.
 
 
 ~~~
-dfs <- lapply(seq_len(nrow(xmat)), lm_feature)
+dfs <- lapply(seq_len(nrow(methyl_mat)), lm_feature)
 head(dfs)
 ~~~
 {: .language-r}
@@ -551,7 +551,7 @@ Here, it's equivalent to writing `rbind(dfs[[1]], dfs[[2]], [etc])`.
 ## bind together all of our small tables to make one big table
 df_all <- do.call(rbind, dfs)
 ## set the rownames of the table to be the names of the features
-rownames(df_all) <- rownames(xmat)
+rownames(df_all) <- rownames(methyl_mat)
 ~~~
 {: .language-r}
 
@@ -601,8 +601,8 @@ we scramble age and run the same test again:
 
 
 ~~~
-age_perm <- age[sample(ncol(xmat), ncol(xmat))]
-dfs <- lapply(seq_len(nrow(xmat)), lm_feature)
+age_perm <- age[sample(ncol(methyl_mat), ncol(methyl_mat))]
+dfs <- lapply(seq_len(nrow(methyl_mat)), lm_feature)
 df_all_perm <- do.call(rbind, dfs)
 plot(df_all_perm$estimate, -log10(df_all_perm$p.value),
     xlab = "Effect size", ylab = bquote(-log[10](p)),
@@ -812,10 +812,10 @@ in effect size estimates.
 library("limma")
 
 design <- model.matrix(~age)
-fit <- lmFit(xmat, design = design)
-fit <- eBayes(fit)
-tt1 <- topTable(fit, coef = 2, number = nrow(fit))
-plot(tt1$logFC, -log10(tt1$P.Value),
+fit_age <- lmFit(methyl_mat, design = design)
+fit_age <- eBayes(fit_age)
+toptab_age <- topTable(fit_age, coef = 2, number = nrow(fit_age))
+plot(toptab_age$logFC, -log10(toptab_age$P.Value),
     xlab = "Effect size", ylab = bquote(-log[10](p)),
     pch = 19
 )
@@ -845,10 +845,10 @@ plot(tt1$logFC, -log10(tt1$P.Value),
 > >    
 > >    ~~~
 > >    design <- model.matrix(~methylation$smoker)
-> >    fit <- lmFit(xmat, design = design)
-> >    fit <- eBayes(fit)
-> >    tt1 <- topTable(fit, coef = 2, number = nrow(fit))
-> >    plot(tt1$logFC, -log10(tt1$P.Value),
+> >    fit_smoke <- lmFit(methyl_mat, design = design)
+> >    fit_smoke <- eBayes(fit_smoke)
+> >    toptab_smoke <- topTable(fit_smoke, coef = 2, number = nrow(fit_smoke))
+> >    plot(toptab_smoke$logFC, -log10(toptab_smoke$P.Value),
 > >        xlab = "Effect size", ylab = bquote(-log[10](p)),
 > >        pch = 19
 > >    )
@@ -859,7 +859,7 @@ plot(tt1$logFC, -log10(tt1$P.Value),
 > > 2. We can use `all.equal` to compare vectors:
 > >    
 > >    ~~~
-> >    all.equal(p.adjust(tt1$P.Value, method = "BH"), tt1$adj.P.Val)
+> >    all.equal(p.adjust(toptab_smoke$P.Value, method = "BH"), toptab_smoke$adj.P.Val)
 > >    ~~~
 > >    {: .language-r}
 > >    
@@ -952,6 +952,105 @@ separately.
 > - [a blog post by TJ Mahr](https://www.tjmahr.com/plotting-partial-pooling-in-mixed-effects-models/)
 > - [a book by David Robinson](https://gumroad.com/l/empirical-bayes)
 > - [a (relatively technical) book by Gelman and Hill](http://www.stat.columbia.edu/~gelman/arm/)
+{: .callout}
+
+
+# Screening
+
+What people sometimes do is to select variables based on correlation with
+the outcome, or using a univariate modelling approach like we used in the 
+previous lesson.
+The p-values we get out of this kind of approach
+model are meaningless because we're basically doing a 2-stage model and only
+reporting one set of p-values (ignoring all the non-significant ones) and
+not correctly adjusting for the true number of tests we're performing.
+
+
+~~~
+cors <- apply(methyl_mat, 1, function(col) cor(col, age))
+x_cor <- methyl_mat[abs(cors) > quantile(abs(cors), 0.95), ]
+design <- model.matrix(~age)
+fit_cor <- lmFit(x_cor, design = design)
+fit_cor <- eBayes(fit_cor)
+toptab_cor <- topTable(fit_cor, coef = 2, number = nrow(fit_cor))
+plot(toptab_cor$logFC, -log10(toptab_cor$P.Value),
+    xlab = "Effect size", ylab = bquote(-log[10](p)),
+    pch = 19
+)
+~~~
+{: .language-r}
+
+<img src="../fig/rmd-02-screening-cor-1.png" width="432" style="display: block; margin: auto;" />
+
+~~~
+feats <- rownames(toptab_cor)
+pvals_both <- cbind(
+    Original = toptab_age[feats, "adj.P.Val"],
+    Screened = toptab_cor[feats, "adj.P.Val"]
+)
+lims <- range(pvals_both)
+plot(pvals_both, xlim = lims, ylim = lims, log = "xy")
+abline(h = 0.05, lty = "dashed", col = "firebrick")
+abline(v = 0.05, lty = "dashed", col = "firebrick")
+abline(coef = 0:1, lty = "dashed")
+~~~
+{: .language-r}
+
+<img src="../fig/rmd-02-screening-cor-2.png" width="432" style="display: block; margin: auto;" />
+
+This two-step selection process biases the results towards
+significance, and it means that the p-values we
+report aren't accurate.
+
+> ## Screening using variance
+> 
+> One way to screen for variables that *does* work is to use a filter
+> or screen that is independent of the test statistic.
+> Correlation is not independent of the t-statistic. However,
+> Overall variance of a feature is independent of this statistic, because
+> the overall variability level does not. However, we might suspect that
+> features that don't vary much at all don't vary in our groups of interest,
+> or alongside our continuous features (age in this example).
+> 
+> This approach was introduced by 
+> [Bourgon, Gentleman and Huber (2010)](https://www.pnas.org/content/107/21/9546.short)
+> and can be shown to be valid. This is because variance and the t-statistic
+> are not correlated under the null hypothesis, but are correlated under
+> the alternative.
+> 
+> 
+> ~~~
+> vars <- apply(methyl_mat, 1, var)
+> x_var <- methyl_mat[abs(vars) > quantile(abs(cors), 0.5), ]
+> design <- model.matrix(~age)
+> fit_var <- lmFit(x_var, design = design)
+> fit_var <- eBayes(fit_var)
+> toptab_var <- topTable(fit_var, coef = 2, number = nrow(fit_var))
+> feats <- rownames(toptab_var)
+> plot(toptab_var$logFC, -log10(toptab_var$P.Value),
+>     xlab = "Effect size", ylab = bquote(-log[10](p)),
+>     pch = 19
+> )
+> ~~~
+> {: .language-r}
+> 
+> <img src="../fig/rmd-02-screening-var-1.png" width="432" style="display: block; margin: auto;" />
+> 
+> ~~~
+> pvals_both_var <- cbind(
+>     Original = toptab_age[feats, "adj.P.Val"],
+>     Screened = toptab_var[feats, "adj.P.Val"]
+> )
+> lims <- range(pvals_both_var)
+> plot(pvals_both_var, xlim = lims, ylim = lims, log = "xy")
+> abline(h = 0.05, lty = "dashed", col = "firebrick")
+> abline(v = 0.05, lty = "dashed", col = "firebrick")
+> abline(coef = 0:1, lty = "dashed")
+> ~~~
+> {: .language-r}
+> 
+> <img src="../fig/rmd-02-screening-var-2.png" width="432" style="display: block; margin: auto;" />
+> 
 {: .callout}
 
 [^1]: It's not hugely problematic if the assumption of normal residuals is violated. It mainly affects our ability to accurately predict responses for new, unseen observations.
