@@ -511,30 +511,96 @@ callout demonstrates this.
 > pros2.scaled <- scale(pros2) # centre and scale the Prostate data
 > pros2.cov <- cov(pros2.scaled)   #generate covariance matrix
 > pros2.cov
-> pros2.eigen <- eigen(pros2.cov) # preform eigen decomposition
-> pros2.eigen # The slot $vectors = rotation of the PCA
-> # generate PC scores by by hand, using matrix multiplication
-> my.pros2.pcs <- pros2.scaled %*% pros.eigen$vectors
-> # compare results
-> par(mfrow=c(1,2))
-> plot(pca.pros$x[,1:2], main="prcomp()")
-> abline(h=0, v=0, lty=2)
-> plot(my.pros2.pcs[,1:2], main="\"By hand\"", xlab="PC1", ylab="PC2")
-> abline(h=0, v=0, lty=2)
-> par(mfrow=c(1,1)
-> # Note that the axis orientations may be swapped but the relative positions of the dots should be the same in both plots.
 > ~~~
 > {: .language-r}
 > 
 > 
 > 
 > ~~~
-> Error: <text>:16:0: unexpected end of input
-> 14: par(mfrow=c(1,1)
-> 15: # Note that the axis orientations may be swapped but the relative positions of the dots should be the same in both plots.
->    ^
+>            lcavol   lweight         lbph          lcp      lpsa
+> lcavol  1.0000000 0.1941283  0.027349703  0.675310484 0.7344603
+> lweight 0.1941283 1.0000000  0.434934636  0.100237795 0.3541204
+> lbph    0.0273497 0.4349346  1.000000000 -0.006999431 0.1798094
+> lcp     0.6753105 0.1002378 -0.006999431  1.000000000 0.5488132
+> lpsa    0.7344603 0.3541204  0.179809410  0.548813169 1.0000000
+> ~~~
+> {: .output}
+> 
+> 
+> 
+> ~~~
+> pros2.eigen <- eigen(pros2.cov) # preform eigen decomposition
+> pros2.eigen # The slot $vectors = rotation of the PCA
+> ~~~
+> {: .language-r}
+> 
+> 
+> 
+> ~~~
+> eigen() decomposition
+> $values
+> [1] 2.4488355 1.3653171 0.5554705 0.4048702 0.2255067
+> 
+> $vectors
+>            [,1]        [,2]        [,3]        [,4]        [,5]
+> [1,] -0.5616465  0.23664270  0.01486043  0.22708502  0.75945046
+> [2,] -0.2985223 -0.60174151 -0.66320198 -0.32126853  0.07577123
+> [3,] -0.1681278 -0.69638466  0.69313753  0.04517286  0.06558369
+> [4,] -0.4962203  0.31092357  0.26309227 -0.72394666 -0.25253840
+> [5,] -0.5665123  0.01680231 -0.10141557  0.56487128 -0.59111493
+> ~~~
+> {: .output}
+> 
+> 
+> 
+> ~~~
+> # generate PC scores by by hand, using matrix multiplication
+> my.pros2.pcs <- pros2.scaled %*% pros.eigen$vectors
+> ~~~
+> {: .language-r}
+> 
+> 
+> 
+> ~~~
+> Error in eval(expr, envir, enclos): object 'pros.eigen' not found
 > ~~~
 > {: .error}
+> 
+> 
+> 
+> ~~~
+> # compare results
+> par(mfrow=c(1,2))
+> plot(pca.pros$x[,1:2], main="prcomp()")
+> abline(h=0, v=0, lty=2)
+> plot(my.pros2.pcs[,1:2], main="\"By hand\"", xlab="PC1", ylab="PC2")
+> ~~~
+> {: .language-r}
+> 
+> 
+> 
+> ~~~
+> Error in eval(expr, envir, enclos): object 'my.pros2.pcs' not found
+> ~~~
+> {: .error}
+> 
+> 
+> 
+> ~~~
+> abline(h=0, v=0, lty=2)
+> par(mfrow=c(1,1))
+> ~~~
+> {: .language-r}
+> 
+> <div class="figure" style="text-align: center">
+> <img src="../fig/rmd-05-pca-by-hand-1.png" alt="plot of chunk pca-by-hand" width="432" />
+> <p class="caption">plot of chunk pca-by-hand</p>
+> </div>
+> 
+> ~~~
+> # Note that the axis orientations may be swapped but the relative positions of the dots should be the same in both plots.
+> ~~~
+> {: .language-r}
 {: .callout}
 
 
