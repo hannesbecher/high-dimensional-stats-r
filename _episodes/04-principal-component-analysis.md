@@ -713,37 +713,9 @@ represents.
 > > 
 > > ~~~
 > > pc <- pca(mat, metadata = metadata)
-> > ~~~
-> > {: .language-r}
-> > 
-> > 
-> > 
-> > ~~~
-> > Warning: useNames = NA is deprecated. Instead, specify either useNames = TRUE
-> > or useNames = TRUE.
-> > ~~~
-> > {: .warning}
-> > 
-> > 
-> > 
-> > ~~~
 > > #Many PCs explain a very small amount of the total variance in the data
 > > #Remove the lower 20% of PCs with lower variance
 > > pc <- pca(mat, metadata = metadata, removeVar = 0.2)
-> > ~~~
-> > {: .language-r}
-> > 
-> > 
-> > 
-> > ~~~
-> > Warning: useNames = NA is deprecated. Instead, specify either useNames = TRUE
-> > or useNames = TRUE.
-> > ~~~
-> > {: .warning}
-> > 
-> > 
-> > 
-> > ~~~
 > > #Explore other arguments provided in pca
 > > pc$rotated[1:5, 1:5]
 > > ~~~
@@ -840,8 +812,8 @@ represents.
 > > 215281_x_at 0.003923775 0.003179556 -0.0004388192 9.664648e-05 0.003501335
 > >                    PC86        PC87          PC88         PC89         PC90
 > > 215281_x_at -0.00112973 0.006489667 -0.0005039785 -0.004296355 -0.002751513
-> >                   PC91
-> > 215281_x_at -0.0196087
+> >                     PC91
+> > 215281_x_at -0.001877408
 > > ~~~
 > > {: .output}
 > > 
@@ -904,7 +876,7 @@ represents.
 > >                    PC82        PC83         PC84       PC85       PC86
 > > 211122_s_at -0.01988441 0.009667348 -0.008248781 0.01198369 0.01221713
 > >                     PC87        PC88        PC89        PC90        PC91
-> > 211122_s_at -0.003864842 -0.02876816 -0.01771452 -0.02164973 -0.02709543
+> > 211122_s_at -0.003864842 -0.02876816 -0.01771452 -0.02164973 0.003346046
 > > ~~~
 > > {: .output}
 > > The function `pca()` is used to perform PCA, and uses as inputs a matrix
