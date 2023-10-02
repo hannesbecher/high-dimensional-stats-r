@@ -61,8 +61,9 @@ age <- methylation$Age
 ~~~
 {: .language-r}
 
-Then, we try to fit a model of age using all of the 5,000 features in this
-dataset (average methylation levels, M-values, across different sites in the genome).
+Then, we try to fit a model with outcome age and all 5,000 features in this
+dataset as predictors (average methylation levels, M-values, across different
+sites in the genome).
 
 
 ~~~
@@ -143,6 +144,7 @@ than observations.
 > [1] 0
 > ~~~
 > {: .output}
+{: .callout}
 
 > ## Correlated features -- common in high-dimensional data
 > 
@@ -176,7 +178,7 @@ than observations.
 > 
 > 
 > ~~~
-> Error in Heatmap(cor_mat, column_title = "Feature-feature correlation in methylation data", : could not find function "Heatmap"
+> Error in col_fun(le): a matrix-like object is required as argument to 'col'
 > ~~~
 > {: .error}
 > 
@@ -768,11 +770,10 @@ intersect(names(selected_coefs), coef_horvath$CpGmarker)
 ~~~
 {: .output}
 
-
-~~~
-Error in Heatmap(hmat_ord, name = "Scaled\nmethylation level", top_annotation = columnAnnotation(age = age_ord, : could not find function "Heatmap"
-~~~
-{: .error}
+<div class="figure" style="text-align: center">
+<img src="../fig/rmd-03-heatmap-lasso-1.png" alt="Alt" width="432" />
+<p class="caption">Heatmap</p>
+</div>
 
 # Blending ridge regression and the LASSO - elastic nets
 

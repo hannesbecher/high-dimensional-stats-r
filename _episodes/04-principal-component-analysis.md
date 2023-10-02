@@ -516,7 +516,7 @@ callout demonstrates this.
 > # generate PC scores by by hand, using matrix multiplication
 > my.pros2.pcs <- pros2.scaled %*% pros.eigen$vectors
 > # compare results
-> par(mfrow=c(1,2)
+> par(mfrow=c(1,2))
 > plot(pca.pros$x[,1:2], main="prcomp()")
 > abline(h=0, v=0, lty=2)
 > plot(my.pros2.pcs[,1:2], main="\"By hand\"", xlab="PC1", ylab="PC2")
@@ -529,10 +529,10 @@ callout demonstrates this.
 > 
 > 
 > ~~~
-> Error: <text>:10:1: unexpected symbol
-> 9: par(mfrow=c(1,2)
-> 10: plot
->     ^
+> Error: <text>:16:0: unexpected end of input
+> 14: par(mfrow=c(1,1)
+> 15: # Note that the axis orientations may be swapped but the relative positions of the dots should be the same in both plots.
+>    ^
 > ~~~
 > {: .error}
 {: .callout}
@@ -1078,20 +1078,34 @@ a warning. This is not a serious problem.
 
 
 ~~~
-plotloadings(pc, c(“PC1”), rangeRetain = 0.1)
-plotloadings(pc, c(“PC2”), rangeRetain = 0.1)
-plotloadings(pc, c(“PC1”, “PC2”), rangeRetain = 0.1)
+plotloadings(pc, c("PC1"), rangeRetain = 0.1)
 ~~~
 {: .language-r}
 
-
+<div class="figure" style="text-align: center">
+<img src="../fig/rmd-05-loadingsplots-1.png" alt="plot of chunk loadingsplots" width="432" />
+<p class="caption">plot of chunk loadingsplots</p>
+</div>
 
 ~~~
-Error: <text>:1:20: unexpected input
-1: plotloadings(pc, c(“
-                       ^
+plotloadings(pc, c("PC2"), rangeRetain = 0.1)
 ~~~
-{: .error}
+{: .language-r}
+
+<div class="figure" style="text-align: center">
+<img src="../fig/rmd-05-loadingsplots-2.png" alt="plot of chunk loadingsplots" width="432" />
+<p class="caption">plot of chunk loadingsplots</p>
+</div>
+
+~~~
+plotloadings(pc, c("PC1", "PC2"), rangeRetain = 0.1)
+~~~
+{: .language-r}
+
+<div class="figure" style="text-align: center">
+<img src="../fig/rmd-05-loadingsplots-3.png" alt="plot of chunk loadingsplots" width="432" />
+<p class="caption">plot of chunk loadingsplots</p>
+</div>
 
 You can see how the third code line prooces more dots, some of which do not have
 extreme loadings. This is because all loadings selected for any PC are shown for all

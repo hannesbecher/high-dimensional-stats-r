@@ -578,9 +578,7 @@ small uncertainty may lead to a small p-value.
 > [1] TRUE
 > ~~~
 > {: .output}
->
->
->{: .callout}
+{: .callout}
 
 # Sharing information across outcome variables
 
@@ -1247,7 +1245,7 @@ experiment over and over.
     Hansen](https://kasperdanielhansen.github.io/genbioconductor/html/limma.html)
 -   [**`limma`** user
     manual](https://www.bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf).
--   [The **`VariancePartition`** package](https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/dream.html) has similar functionality than **`limma`** but allows the inclusion of random effects. 
+-   [The **`VariancePartition`** package](https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/dream.html) has similar functionality as **`limma`** but allows the inclusion of random effects. 
 
 ## Footnotes
 
