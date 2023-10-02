@@ -555,40 +555,13 @@ callout demonstrates this.
 > 
 > ~~~
 > # generate PC scores by by hand, using matrix multiplication
-> my.pros2.pcs <- pros2.scaled %*% pros.eigen$vectors
-> ~~~
-> {: .language-r}
-> 
-> 
-> 
-> ~~~
-> Error in eval(expr, envir, enclos): object 'pros.eigen' not found
-> ~~~
-> {: .error}
-> 
-> 
-> 
-> ~~~
+> my.pros2.pcs <- pros2.scaled %*% pros2.eigen$vectors
 > # compare results
 > par(mfrow=c(1,2))
 > plot(pca.pros$x[,1:2], main="prcomp()")
 > abline(h=0, v=0, lty=2)
 > plot(my.pros2.pcs[,1:2], main="\"By hand\"", xlab="PC1", ylab="PC2")
-> ~~~
-> {: .language-r}
-> 
-> 
-> 
-> ~~~
-> Error in eval(expr, envir, enclos): object 'my.pros2.pcs' not found
-> ~~~
-> {: .error}
-> 
-> 
-> 
-> ~~~
 > abline(h=0, v=0, lty=2)
-> par(mfrow=c(1,1))
 > ~~~
 > {: .language-r}
 > 
@@ -598,6 +571,7 @@ callout demonstrates this.
 > </div>
 > 
 > ~~~
+> par(mfrow=c(1,1))
 > # Note that the axis orientations may be swapped but the relative positions of the dots should be the same in both plots.
 > ~~~
 > {: .language-r}
