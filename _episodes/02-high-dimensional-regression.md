@@ -454,10 +454,9 @@ results like this under the "null hypothesis".
 
 # Fitting a lot of linear models
 
-If we wanted to repeat this process for each feature in our data, we
-need to narrow our focus. In particular,Instead, we are more interested in whether there
-is a relationship between age and methylation levels. Therefore, we will
-focus only on the second coefficient.
+In the linear model above, we are generally interested in the second regression
+coefficient (often referred to as *slope*) which measures the linear relationship
+between age and methylation levels. For the first CpG, here is its estimate:
 
 
 ~~~
@@ -476,12 +475,17 @@ coef_age_methyl1
 ~~~
 {: .output}
 
-Now, we could do this for every feature in the dataset and rank the
-results. However, fitting models in this way to 5000
-features is not very computationally efficient, and it would also be
-laborious to do programmatically. There are ways to get around this, but
-first let us talk about what exactly we are doing when we look at
-significance tests in this context.
+In this case, the p-value is equal to 0.381 and therefore we cannot reject the null
+hypothesis: there is no statistical evidence to suggest that the regression 
+coefficient associated to age is not equal to zero. 
+
+Now, we could do this for every feature (CpG) in the dataset and rank the
+results based on their test statistic or associated p-value. However, fitting
+models in this way to 5000 features is not very computationally 
+efficient, and it would also be laborious to do programmatically. There are ways 
+to get around this, but first let us talk about what exactly we are doing when 
+we look at significance tests in this context.
+
 
 
 
