@@ -327,8 +327,9 @@ $$
 
 where $\text{Age}_j$ is the age of sample $j$. In this model, $\beta_1$
 represents the unit change in mean methylation level for each unit
-(year) change in age. We can fit this model and get more information
-from the model object:
+(year) change in age. For a specific CpG, we can fit this model and get more 
+information from the model object. For illustration purposes, here we 
+arbitrarily select the first CpG in the `methyl_mat` matrix (the one on its first row).
 
 
 ~~~
@@ -364,8 +365,8 @@ abline(lm_age_methyl1)
 {: .language-r}
 
 <div class="figure" style="text-align: center">
-<img src="../fig/rmd-02-plot-lm-methyl1-1.png" alt="plot of chunk plot-lm-methyl1" width="432" />
-<p class="caption">plot of chunk plot-lm-methyl1</p>
+<img src="../fig/rmd-02-plot-lm-methyl1-1.png" alt="An example of the relationship between age (x-axis) and methylation levels (y-axis) for an arbitrarily selected CpG. In this case, the y-axis shows methylation levels for the first CpG in our data. The black line shows the fitted regression line (based on the intercept and slope estimates shown above). For this feature, we can see that there is no strong relationship between methylation and age." width="432" />
+<p class="caption">A scatter plot of age versus the methylation level for an arbitrarily selected CpG side (the one stored as the first column of methyl_mat). Each dot represents an individual. The black line represents the estimated linear model.</p>
 </div>
 
 For this feature, we can see that there is no strong relationship
@@ -534,7 +535,8 @@ Calculating the p-values is a bit more tricky. Specifically, it is the
 proportion of the distribution of the test statistic under the null
 hypothesis that is *as extreme or more extreme* than the observed value
 of the test statistic. This is easy to observe visually, by plotting the
-distribution:
+theoretical distribution of the test statistic under the null hypothesis 
+(see next call-out box for more details about it):
 
 <div class="figure" style="text-align: center">
 <img src="../fig/rmd-02-tdist-1.png" alt="Density plot of a t-distribution showing the observed test statistics (here, t-statistics). The p-values, visualised here with shaded regions, represent the portion of the null distribution that is as extreme or more extreme as the observed test statistics, which are shown as dashed lines." width="432" />
@@ -543,14 +545,18 @@ distribution:
 
 The red-ish shaded region represents the portion of the distribution of
 the test statistic under the null hypothesis that is equal or greater to
-the value we observe for the intercept term. This shaded region is small
-relative to the total area of the null distribution; therefore, the
+the value we observe for the intercept term. As our null hypothesis 
+relates to a 2-tail test (as the null hypothesis states that the regression
+coefficient is equal to zero, we would reject it if the regression
+coefficient is substantially larger **or** smaller than zero), the p-value for
+the test is twice the value of the shaded region. In this case, the shaded region 
+is small relative to the total area of the null distribution; therefore, the
 p-value is small ($p=0.013$). The blue-ish shaded region represents the same measure for the slope term; 
 this is larger, relative to the total area of the distribution, therefore the 
 p-value is larger than the one for the intercept term 
-($p=`round(table_age_methyl1$p.value[[2]], digits = 3)`$). You can see that
-the p-value is a function of the size of the effect we're estimating and
-the uncertainty we have in that effect. A large effect with large
+($p=0.381$). The
+the p-value is a function of the test statistic: the ratio between the effect size 
+we're estimating and the uncertainty we have in that effect. A large effect with large
 uncertainty may not lead to a small p-value, and a small effect with
 small uncertainty may lead to a small p-value.
 
@@ -574,8 +580,9 @@ small uncertainty may lead to a small p-value.
 > Since we're not sure if the coefficient will be larger or smaller than
 > zero, we want to do a 2-tail test. Therefore we take the absolute
 > value of the t-statistic, and look at the upper rather than lower
-> tailed. Because in a 2-tailed test we're looking at "half" of the
-> t-distribution, we also multiply the p-value by 2.
+> tailed. In the figure above the shaded areas are only looking at "half" of the
+> t-distribution (which is symmetric around zero), therefore we multiply the 
+> shaded area by 2 in order to calculate the p-value. 
 >
 > Combining all of this gives us:
 >
@@ -621,7 +628,7 @@ $$
 
 It is clear that large effect sizes will likely lead to small p-values,
 as long as the standard error for the coefficent is not large. However,
-the standard error is affected by the amuont of noise, as we saw
+the standard error is affected by the amount of noise, as we saw
 earlier. If we have a small number of observations, it is common for the
 noise for some features to be extremely small simply by chance. This, in turn,
 causes small p-values for these features, which may give us unwarranted
